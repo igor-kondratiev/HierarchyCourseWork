@@ -1,4 +1,5 @@
 from mutils import additive_normalization, eigenvector_method
+from gutils import generate_matrix
 
 
 def main():
@@ -8,8 +9,16 @@ def main():
 		[1./4, 3./4,  1.  , 1./7 ],
 		[7./4, 21./4, 7.,   1,   ]
 	]
-	print additive_normalization(matrix)
+
+	# print additive_normalization(matrix)
 	print eigenvector_method(matrix)
+
+	for _ in xrange(10):
+		matrix = generate_matrix(4)
+
+		# print additive_normalization(matrix)
+		print eigenvector_method(matrix)
+
 
 if __name__ == '__main__':
 	main()
