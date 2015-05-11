@@ -58,3 +58,6 @@ target/
 
 # virtualenv
 .env
+
+# program output
+results/
