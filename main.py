@@ -12,5 +12,4 @@ def main():
 	print eigenvector_method(matrix)
 
 if __name__ == '__main__':
-	print "Hello"
 	main()
