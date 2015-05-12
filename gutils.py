@@ -47,7 +47,7 @@ def generate_matrix_by_weights(size):
     return matrix
 
 def generate_matrix_file(size, filename):
-	matrix = generate_matrix(size)
+	matrix = generate_matrix_by_weights(size)
 	with open(filename, "w") as f:
 		for line in matrix:
 			f.write("{0}\n".format(", ".join("{0:.2f}".format(x) for x in line)))

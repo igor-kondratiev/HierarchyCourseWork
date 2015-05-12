@@ -1,5 +1,6 @@
 import os
 
+from consts import get_CR_limit
 from mutils import additive_normalization, eigenvector_method
 from gutils import generate_matrix_file
 
@@ -31,8 +32,12 @@ def main():
 	local_weights = {}
 	for level in HIERARCHY:
 		for item in level:
-			_, local_weights[item] = eigenvector_method(matrixes[item])
+			CR, local_weights[item] = eigenvector_method(matrixes[item])
 			save_vector_file(local_weights[item], "results/{0}_local_w.txt".format(item.lower()))
+			if CR > get_CR_limit(len(matrixes[item])):
+				print "ERROR: matrix for {0} is inconsistent: {1}".format(item, CR)
+			with open("results/{0}_CR.txt".format(item), "w") as f:
+				f.write("{0:.3f}".format(CR))
 
 	# norming all local weights
 	for v in local_weights.itervalues():
@@ -56,8 +61,7 @@ def main():
 			for k in xrange(ALTERNATIVES_COUNT):
 				g_weights[head][k] /= s
 
-	print g_weights["Target"]
-
+	save_vector_file(g_weights["Target"], "results/global.txt")
 
 if __name__ == '__main__':
 	main()
