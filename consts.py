@@ -36,3 +36,19 @@ def get_CR_limit(n):
 	n = min(max_n, max(n, min_n))
 
 	return _CR_LIMIT[n]
+
+_GCI_LIMIT = {
+	3: 0.1573,
+	4: 0.3526,
+	5: 0.370,
+}
+
+def get_GCI_limit(n):
+	if n <= 0:
+		raise Exception("Matrix size must be positive")
+
+	max_n, min_n = max(_GCI_LIMIT.iterkeys()), min(_GCI_LIMIT.iterkeys())
+	n = min(max_n, max(n, min_n))
+
+	return _GCI_LIMIT[n]
+

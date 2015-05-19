@@ -32,7 +32,7 @@ def main():
 	local_weights = {}
 	for level in HIERARCHY:
 		for item in level:
-			CR, local_weights[item] = eigenvector_method(matrixes[item])
+			CR, local_weights[item], consist = eigenvector_method(matrixes[item])
 			save_vector_file(local_weights[item], "results/{0}_local_w.txt".format(item.lower()))
 			if CR > get_CR_limit(len(matrixes[item])):
 				print "ERROR: matrix for {0} is inconsistent: {1}".format(item, CR)
