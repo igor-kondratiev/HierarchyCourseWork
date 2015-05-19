@@ -1,7 +1,6 @@
 import os
 
-from consts import get_CR_limit
-from mutils import additive_normalization, eigenvector_method
+from mutils import additive_normalization, eigenvector_method, row_geometric_mean_method
 from gutils import generate_matrix_file
 
 
@@ -18,29 +17,47 @@ def save_vector_file(v, filename):
 	with open(filename, "w") as f:
 		f.write("{0}\n".format(", ".join("{0:.2f}".format(x) for x in v)))
 
+def ensure_dir(path):
+	if not os.path.exists(path):
+		os.mkdir(path)
 
 def main():
-	if not os.path.exists("results"):
-		os.mkdir("results")
+	ensure_dir("results")
+	ensure_dir("results/matrixes")
 
 	matrixes = {}
 	for i, level in enumerate(HIERARCHY):
 		for item in level:
 			size = ALTERNATIVES_COUNT if i == len(HIERARCHY) - 1 else len(HIERARCHY[i + 1])
-			matrixes[item] = generate_matrix_file(size, "results/{0}.txt".format(item.lower()))
+			matrixes[item] = generate_matrix_file(size, "results/matrixes/{0}.txt".format(item.lower()))
 
-	local_weights = {}
+	ensure_dir("results/local_weights")
+
+	local_weights = {"EM": {}, "AN": {}, "RGMM": {}}
 	for level in HIERARCHY:
 		for item in level:
-			CR, local_weights[item], consist = eigenvector_method(matrixes[item])
-			save_vector_file(local_weights[item], "results/{0}_local_w.txt".format(item.lower()))
-			if CR > get_CR_limit(len(matrixes[item])):
-				print "ERROR: matrix for {0} is inconsistent: {1}".format(item, CR)
-			with open("results/{0}_CR.txt".format(item), "w") as f:
-				f.write("{0:.3f}".format(CR))
+			CR, local_weights["EM"][item], consist = eigenvector_method(matrixes[item])
+			save_vector_file(local_weights["EM"][item], "results/local_weights/{0}_EM.txt".format(item.lower()))
+			if not consist:
+				print "ERROR: matrix for {0} is inconsistent by CR: {1}".format(item, CR)
+
+			HCR, local_weights["AN"][item], consist = additive_normalization(matrixes[item])
+			save_vector_file(local_weights["AN"][item], "results/local_weights/{0}_AN.txt".format(item.lower()))
+			if not consist:
+				print "ERROR: matrix for {0} is inconsistent by HCR: {1}".format(item, HCR)
+
+			GCI, local_weights["RGMM"][item], consist = row_geometric_mean_method(matrixes[item])
+			save_vector_file(local_weights["RGMM"][item], "results/local_weights/{0}_RGMM.txt".format(item.lower()))
+			if not consist:
+				print "ERROR: matrix for {0} is inconsistent by GCI: {1}".format(item, GCI)
+			
+			with open("results/local_weights/{0}_consistency.txt".format(item.lower()), "w") as f:
+				f.write("CR: {0:.3f}\n".format(CR))
+				f.write("HCR: {0:.3f}\n".format(HCR))
+				f.write("GCI: {0:.3f}\n".format(GCI))
 
 	# norming all local weights
-	for v in local_weights.itervalues():
+	for v in local_weights["EM"].itervalues():
 		s = sum(v)
 		for i in xrange(len(v)):
 			v[i] /= s
@@ -48,14 +65,14 @@ def main():
 	# calculating global weights
 	g_weights = {}
 	for item in HIERARCHY[-1]:
-		g_weights[item] = local_weights[item][:]
+		g_weights[item] = local_weights["EM"][item][:]
 
 	for i in reversed(xrange(1, len(HIERARCHY))):
 		for head in HIERARCHY[i - 1]:
 			g_weights[head] = [0 for _ in xrange(ALTERNATIVES_COUNT)]
 			for j in xrange(ALTERNATIVES_COUNT):
 				for k, item in enumerate(HIERARCHY[i]):
-					g_weights[head][j] += local_weights[head][k] * g_weights[item][j]
+					g_weights[head][j] += local_weights["EM"][head][k] * g_weights[item][j]
 
 			s = sum(g_weights[head])
 			for k in xrange(ALTERNATIVES_COUNT):

@@ -93,6 +93,6 @@ def row_geometric_mean_method(matrix):
 
 	weights = [x / sum(v) for x in v]
 
-	GCI = 2 * sum(math.log(matrix[i][j] * v[j] / v[i]) ** 2 for j in xrange(i, size) for i in xrange(size)) / (size - 1) / (size - 2)
+	GCI = 2 * sum(math.log(matrix[i][j] * v[j] / v[i]) ** 2 for j in xrange(i + 1, size) for i in xrange(size)) / (size - 1) / (size - 2)
 
 	return GCI, weights, GCI <= get_GCI_limit(size)
