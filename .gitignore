@@ -59,5 +59,6 @@ target/
 # virtualenv
 .env
 
-# program output
+# program input/output
 results/
+input/

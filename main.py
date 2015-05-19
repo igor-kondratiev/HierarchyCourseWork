@@ -21,6 +21,19 @@ def ensure_dir(path):
 	if not os.path.exists(path):
 		os.mkdir(path)
 
+def read_matrix(filename):
+	matrix = []
+	with open(filename, "r") as f:
+		for line in f:
+			matrix.append(list(map(float, line.strip().split(","))))
+
+	return matrix
+
+def save_matrix_file(matrix, filename):
+	with open(filename, "w") as f:
+		for line in matrix:
+			f.write("{0}\n".format(", ".join("{0:.2f}".format(x) for x in line)))
+
 def main():
 	ensure_dir("results")
 	ensure_dir("results/matrixes")
@@ -28,6 +41,11 @@ def main():
 	matrixes = {}
 	for i, level in enumerate(HIERARCHY):
 		for item in level:
+			if os.path.exists("input/{0}.txt".format(item.lower())):
+				matrixes[item] = read_matrix("input/{0}.txt".format(item.lower()))
+				save_matrix_file(matrixes[item], "results/matrixes/{0}.txt".format(item.lower()))
+				continue
+
 			size = ALTERNATIVES_COUNT if i == len(HIERARCHY) - 1 else len(HIERARCHY[i + 1])
 			matrixes[item] = generate_matrix_file(size, "results/matrixes/{0}.txt".format(item.lower()))
 
