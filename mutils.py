@@ -96,3 +96,39 @@ def row_geometric_mean_method(matrix):
 	GCI = 2 * sum(math.log(matrix[i][j] * v[j] / v[i]) ** 2 for j in xrange(i + 1, size) for i in xrange(size)) / (size - 1) / (size - 2)
 
 	return GCI, weights, GCI <= get_GCI_limit(size)
+
+
+def __calc_global_common(hier, local_weigths, f_norm):
+	"""
+	Distributive method to calculate global weigths
+	"""
+	normed_weights = dict((item, f_norm(x)) for (item, x) in local_weigths.iteritems())
+
+	target = hier[0][0]
+
+	global_weights = {}
+	global_weights[target] = 1.0
+
+	for i in xrange(len(hier)):
+		child_count = len(normed_weights[hier[i][0]])
+		if i + 1 < len(hier):
+			for k, item in enumerate(hier[i + 1]):
+				global_weights[item] = sum(normed_weights[parent][k] * global_weights[parent] for parent in hier[i])
+		else:
+			result = [0 for _ in xrange(child_count)]
+			for k in xrange(child_count):
+				result[k] = sum(normed_weights[parent][k] * global_weights[parent] for parent in hier[i])
+
+	return __norm_sum(result)
+
+def __norm_sum(vec):
+	return [x / sum(vec) for x in vec]
+
+def __norm_max(vec):
+	return [x / max(vec) for x in vec]
+
+def distributive_global_calc(hier, local_weigths):
+	return __calc_global_common(hier, local_weigths, __norm_sum)
+
+def ideal_global_calc(hier, local_weigths):
+	return __calc_global_common(hier, local_weigths, __norm_max)
