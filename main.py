@@ -1,7 +1,7 @@
 import os
 
 from mutils import additive_normalization, eigenvector_method, row_geometric_mean_method, \
-	distributive_global_calc, ideal_global_calc
+	distributive_global_calc, ideal_global_calc, multiplicative_global_calc
 from gutils import generate_matrix_file
 
 
@@ -81,28 +81,13 @@ def main():
 		for i in xrange(len(v)):
 			v[i] /= s
 
-	# calculating global weights
-	# g_weights = {}
-	# for item in HIERARCHY[-1]:
-	# 	g_weights[item] = local_weights["EM"][item][:]
-
-	# for i in reversed(xrange(1, len(HIERARCHY))):
-	# 	for head in HIERARCHY[i - 1]:
-	# 		g_weights[head] = [0 for _ in xrange(ALTERNATIVES_COUNT)]
-	# 		for j in xrange(ALTERNATIVES_COUNT):
-	# 			for k, item in enumerate(HIERARCHY[i]):
-	# 				g_weights[head][j] += local_weights["EM"][head][k] * g_weights[item][j]
-
-	# 		s = sum(g_weights[head])
-	# 		for k in xrange(ALTERNATIVES_COUNT):
-	# 			g_weights[head][k] /= s
-
 	global_weights = {}
 	global_weights["DS"] = distributive_global_calc(HIERARCHY, local_weights["EM"])
-	print global_weights["DS"]
+	save_vector_file(global_weights["DS"], "results/global_DS.txt")
 	global_weights["IS"] = ideal_global_calc(HIERARCHY, local_weights["EM"])
-	print global_weights["IS"]
-	save_vector_file(global_weights["DS"], "results/global.txt")
+	save_vector_file(global_weights["DS"], "results/global_IS.txt")
+	global_weights["MS"] = multiplicative_global_calc(HIERARCHY, local_weights["EM"])
+	save_vector_file(global_weights["MS"], "results/global_MS.txt")
 
 if __name__ == '__main__':
 	main()
