@@ -46,6 +46,30 @@ def generate_matrix_by_weights(size):
 
     return matrix
 
+def generate_fuzzy_by_matrix(matrix):
+    size = len(matrix)
+    matrix_l = []
+    matrix_u = []
+    for i in xrange(size):
+        matrix_l.append([None] * size)
+        matrix_u.append([None] * size)
+        matrix_l[i][i] = matrix_u[i][i] = 1
+
+    for i in xrange(0, size):
+        for j in xrange(0, size):
+            if j > i:
+                value = closest_to_scale(matrix[i][j])
+                if value == 1:
+                    matrix_l[i][j] = 1
+                else:
+                    matrix_l[i][j] = _FUNDAMENTAL_SCALE[max(_FUNDAMENTAL_SCALE.index(value) - 1, 0)]
+                matrix_u[i][j] = _FUNDAMENTAL_SCALE[min(_FUNDAMENTAL_SCALE.index(value) + 1, len(_FUNDAMENTAL_SCALE) - 1)]
+            elif j < i:
+                matrix_l[i][j] = closest_to_scale(1. / matrix_u[j][i])
+                matrix_u[i][j] = closest_to_scale(1. / matrix_l[j][i])
+
+    return matrix_l, matrix, matrix_u
+
 def generate_matrix_file(size, filename):
 	matrix = generate_matrix(size)
 	with open(filename, "w") as f:
