@@ -2,7 +2,8 @@ import os
 
 from mutils import additive_normalization, eigenvector_method, row_geometric_mean_method, \
 	distributive_global_calc, ideal_global_calc, multiplicative_global_calc
-from gutils import generate_matrix_file
+from gutils import generate_matrix_file, generate_fuzzy_matrix_file
+from Lab4 import firstStep, secondStep
 
 
 HIERARCHY = (
@@ -40,15 +41,18 @@ def main():
 	ensure_dir("results/matrixes")
 
 	matrixes = {}
+	fuzzy_matrixes = {}
 	for i, level in enumerate(HIERARCHY):
 		for item in level:
 			if os.path.exists("input/{0}.txt".format(item.lower())):
 				matrixes[item] = read_matrix("input/{0}.txt".format(item.lower()))
 				save_matrix_file(matrixes[item], "results/matrixes/{0}.txt".format(item.lower()))
+				fuzzy_matrixes[item] = generate_fuzzy_matrix_file(matrixes[item], "results/matrixes/{0}_fuzzy.txt".format(item.lower()))
 				continue
 
 			size = ALTERNATIVES_COUNT if i == len(HIERARCHY) - 1 else len(HIERARCHY[i + 1])
 			matrixes[item] = generate_matrix_file(size, "results/matrixes/{0}.txt".format(item.lower()))
+			fuzzy_matrixes[item] = generate_fuzzy_matrix_file(matrixes[item], "results/matrixes/{0}_fuzzy.txt".format(item.lower()))
 
 	ensure_dir("results/local_weights")
 
@@ -88,6 +92,22 @@ def main():
 	save_vector_file(global_weights["DS"], "results/global_IS.txt")
 	global_weights["MS"] = multiplicative_global_calc(HIERARCHY, local_weights["EM"])
 	save_vector_file(global_weights["MS"], "results/global_MS.txt")
+
+	ensure_dir("results/fuzzy_local_weights")
+
+	# Fuzzy calculations
+	for item in fuzzy_matrixes:
+		l, m, u = fuzzy_matrixes[item]
+		z1 = firstStep(l, m, u)
+		wl, wm, wu = secondStep(l, m, u, z1)
+
+		with open("results/fuzzy_local_weights/{0}_2SLGP.txt".format(item.lower()), "w") as f:
+			for i in xrange(len(wl)):
+				if i != 0:
+					f.write(", ")
+				f.write("({0:.2f}; {1:.2f}; {2:.2f})".format(wl[i], wm[i], wu[i]))
+
+
 
 if __name__ == '__main__':
 	main()

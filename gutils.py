@@ -70,6 +70,21 @@ def generate_fuzzy_by_matrix(matrix):
 
     return matrix_l, matrix, matrix_u
 
+def generate_fuzzy_matrix_file(matrix, filename):
+	l, m, u = generate_fuzzy_by_matrix(matrix)
+
+	size = len(m)
+
+	with open(filename, "w") as f:
+		for i in xrange(size):
+			for j in xrange(size):
+				data = "({0:.2f}; {1:.2f}; {2:.2f})".format(l[i][j], m[i][j], u[i][j])
+				if j != size - 1:
+					data += ", "
+				f.write(data)
+			f.write("\n")
+	return l, m, u
+
 def generate_matrix_file(size, filename):
 	matrix = generate_matrix_by_weights(size)
 	with open(filename, "w") as f:
